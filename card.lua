@@ -30,6 +30,7 @@ function CardClass:new(xPos, yPos, name, isFaceUp)
 end
 
 function CardClass:update()
+  -- DEBUG --
   if love.keyboard.isDown("o") then
     self.state = CARD_STATE.MOUSE_OVER
   elseif love.keyboard.isDown("g") then
@@ -37,9 +38,7 @@ function CardClass:update()
   else
     self.state = CARD_STATE.IDLE
   end
-    
-  self:checkForMouseOver()
-  
+  -- DEBUG --
 end
 
 function CardClass:draw()
@@ -64,8 +63,8 @@ function CardClass:checkForMouseOver()
     love.mouse.getX() < self.position.x + self.size.x and
     love.mouse.getY() > self.position.y and
     love.mouse.getY() < self.position.y + self.size.y
-  
-  self.state = isMouseOver and CARD_STATE.MOUSE_OVER or CARD_STATE.IDLE
+    
+  return isMouseOver
 end
 
 function CardClass:flip()

@@ -13,6 +13,11 @@ require "vector"
 require "card"
 require "deck"
 
+selectedCard = nil
+grabbedCards = {}
+grabPos = {}
+grabOffset = {}
+
 function love.load()
   screenWidth = 960
   screenHeight = 640
@@ -20,8 +25,8 @@ function love.load()
   love.graphics.setBackgroundColor(0, 0.68, 0.26, 1)
   
   PILE_POSITIONS = {
-    STOCK =        Vector(screenWidth*1/8 - 48, screenHeight/4),
-    WASTE =        Vector(screenWidth*1/8 - 48, screenHeight/2),
+    STOCK =        Vector(screenWidth*1/8 - 48, screenHeight*1/5 - 48),
+    WASTE =        Vector(screenWidth*1/8 - 48, screenHeight*2/5 - 48),
     TABLEAU_1 =    Vector(screenWidth*3/12 - 32, 56),
     TABLEAU_2 =    Vector(screenWidth*4/12 - 32, 56),
     TABLEAU_3 =    Vector(screenWidth*5/12 - 32, 56),
@@ -68,14 +73,45 @@ function love.load()
 end
 
 function love.update()
+  selectedCard = nil
+  
   for _, card in ipairs(cardTable) do
     card:update()
+    if card:checkForMouseOver() then
+      selectedCard = card
+    end
   end
+  
+  if selectedCard then 
+    selectedCard.state = CARD_STATE.MOUSE_OVER
+  end
+  
+  if #grabbedCards == 0 and love.mouse.isDown(1) then
+    grabCards()
+  end
+  
+  if not love.mouse.isDown(1) and #grabbedCards ~= 0 then
+    releaseCard()
+  end
+  
+  if #grabbedCards ~= 0 then
+    for i, card in ipairs(grabbedCards) do
+      card.state = CARD_STATE.GRABBED
+      card.position = Vector(love.mouse.getX(), love.mouse.getY()) - grabOffset[i]
+    end
+  end
+
 end
 
 function love.draw()
   for _, card in ipairs(cardTable) do
     card:draw()
+  end
+  -- Love2D doesn't have support for z-ordering, but we can do this instead!
+  if #grabbedCards ~= 0 then 
+    for _, card in ipairs(grabbedCards) do
+      card:draw() 
+    end
   end
 end
 
@@ -87,14 +123,21 @@ function love.keypressed(key)
   end
 end
 
-function shuffle(deck)
-	local cardCount = #deck
-	for i = 1, cardCount do
-		local randIndex = math.random(cardCount)
-    local temp = deck[randIndex]
-    deck[randIndex] = deck[cardCount]
-    deck[cardCount] = temp
-    cardCount = cardCount - 1
-	end
-	return deck
+function grabCards()
+  if selectedCard ~= nil then
+    selectedCard.state = CARD_STATE.GRABBED
+    table.insert(grabbedCards, selectedCard)
+    table.insert(grabPos, selectedCard.position)
+    table.insert(grabOffset, Vector(love.mouse.getX() - selectedCard.position.x, love.mouse.getY() - selectedCard.position.y))
+  end
+end
+
+function releaseCard()
+  for i, card in ipairs(grabbedCards) do
+    card.state = CARD_STATE.MOUSE_OVER
+    card.position = grabPos[i]
+  end
+  grabbedCards = {}
+  grabPos = {}
+  grabOffset = {}
 end
