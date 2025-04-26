@@ -8,25 +8,27 @@ function DeckClass:new()
   local deck = {}
   local metadata = {__index = DeckClass}
   setmetatable(deck, metadata)
+
+  deck.cards = {}
   
   for _, s in ipairs(cardSuits) do
     for _, r in ipairs(cardRanks) do
-      table.insert(deck, r .. s)
+      table.insert(deck.cards, r .. s)
     end
   end
   return deck
 end
 
-function DeckClass:shuffle()
-	local cardCount = #self
+function DeckClass:shuffleDeck()
+	local cardCount = #self.cards
 	for i = 1, cardCount do
 		local randIndex = math.random(cardCount)
-    local temp = self[randIndex]
-    self[randIndex] = self[cardCount]
-    self[cardCount] = temp
+    local temp = self.cards[randIndex]
+    self.cards[randIndex] = self.cards[cardCount]
+    self.cards[cardCount] = temp
     cardCount = cardCount - 1
 	end
   for i = 1, cardCount do
-    print(self[i])
+    print(self.cards[i])
   end
 end

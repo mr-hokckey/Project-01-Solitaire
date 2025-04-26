@@ -12,6 +12,7 @@ love.graphics.setDefaultFilter("nearest", "nearest")
 require "vector"
 require "card"
 require "deck"
+require "pile"
 
 selectedCard = nil
 grabbedCards = {}
@@ -43,42 +44,50 @@ function love.load()
   math.randomseed(os.time())
   
   cardDeck = DeckClass:new()
-  cardDeck:shuffle()
+  -- cardDeck:shuffleDeck()
   
-  cardTable = {}
   
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_1.x, PILE_POSITIONS.TABLEAU_1.y, cardDeck[1], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_2.x, PILE_POSITIONS.TABLEAU_2.y, cardDeck[2], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_3.x, PILE_POSITIONS.TABLEAU_3.y, cardDeck[3], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_4.x, PILE_POSITIONS.TABLEAU_4.y, cardDeck[4], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_5.x, PILE_POSITIONS.TABLEAU_5.y, cardDeck[5], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_6.x, PILE_POSITIONS.TABLEAU_6.y, cardDeck[6], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_7.x, PILE_POSITIONS.TABLEAU_7.y, cardDeck[7], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.STOCK.x, PILE_POSITIONS.STOCK.y, cardDeck[8], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.WASTE.x, PILE_POSITIONS.WASTE.y, cardDeck[9], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.FOUNDATION_1.x, PILE_POSITIONS.FOUNDATION_1.y, cardDeck[10], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.FOUNDATION_2.x, PILE_POSITIONS.FOUNDATION_2.y, cardDeck[10], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.FOUNDATION_3.x, PILE_POSITIONS.FOUNDATION_3.y, cardDeck[10], false))
-  table.insert(cardTable, CardClass:new(PILE_POSITIONS.FOUNDATION_4.x, PILE_POSITIONS.FOUNDATION_4.y, cardDeck[10], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_1.x, PILE_POSITIONS.TABLEAU_1.y, cardDeck[1], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_2.x, PILE_POSITIONS.TABLEAU_2.y, cardDeck[2], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_3.x, PILE_POSITIONS.TABLEAU_3.y, cardDeck[3], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_4.x, PILE_POSITIONS.TABLEAU_4.y, cardDeck[4], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_5.x, PILE_POSITIONS.TABLEAU_5.y, cardDeck[5], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_6.x, PILE_POSITIONS.TABLEAU_6.y, cardDeck[6], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_7.x, PILE_POSITIONS.TABLEAU_7.y, cardDeck[7], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.STOCK.x, PILE_POSITIONS.STOCK.y, cardDeck[8], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.WASTE.x, PILE_POSITIONS.WASTE.y, cardDeck[9], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.FOUNDATION_1.x, PILE_POSITIONS.FOUNDATION_1.y, cardDeck[10], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.FOUNDATION_2.x, PILE_POSITIONS.FOUNDATION_2.y, cardDeck[10], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.FOUNDATION_3.x, PILE_POSITIONS.FOUNDATION_3.y, cardDeck[10], false))
+  -- table.insert(cardTable, CardClass:new(PILE_POSITIONS.FOUNDATION_4.x, PILE_POSITIONS.FOUNDATION_4.y, cardDeck[10], false))
   
-  for i=1, 19 do
-    table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_7.x, PILE_POSITIONS.TABLEAU_7.y + (i-1)*(24), cardDeck[i], false))
-  end
-  --table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_7.x, PILE_POSITIONS.TABLEAU_7.y + (22)*(96 / 4), cardDeck[52], false))
+  -- for i=1, 19 do
+  --   table.insert(cardTable, CardClass:new(PILE_POSITIONS.TABLEAU_7.x, PILE_POSITIONS.TABLEAU_7.y + (i-1)*(24), cardDeck[i], false))
+  -- end
+  
+  -- tableau = PileClass:new(PILE_POSITIONS.TABLEAU_1.x, PILE_POSITIONS.TABLEAU_1.y, PILE_TYPE.TABLEAU, { cardDeck[1] } )
 
-  
---  for i, c in ipairs(cardDeck) do
---    table.insert(cardTable, CardClass:new(math.fmod(i - 1, 13) * 96, math.floor((i - 1) / 13) * 96 / 4, c, false))
---  end
+  cardPiles = {
+    PileClass:new(PILE_POSITIONS.TABLEAU_1.x, PILE_POSITIONS.TABLEAU_1.y, PILE_TYPE.TABLEAU, cardDeck.cards, 1),
+    PileClass:new(PILE_POSITIONS.TABLEAU_2.x, PILE_POSITIONS.TABLEAU_2.y, PILE_TYPE.TABLEAU, cardDeck.cards, 2),
+    PileClass:new(PILE_POSITIONS.TABLEAU_3.x, PILE_POSITIONS.TABLEAU_3.y, PILE_TYPE.TABLEAU, cardDeck.cards, 3),
+    PileClass:new(PILE_POSITIONS.TABLEAU_4.x, PILE_POSITIONS.TABLEAU_4.y, PILE_TYPE.TABLEAU, cardDeck.cards, 4),
+    PileClass:new(PILE_POSITIONS.TABLEAU_5.x, PILE_POSITIONS.TABLEAU_5.y, PILE_TYPE.TABLEAU, cardDeck.cards, 5),
+    PileClass:new(PILE_POSITIONS.TABLEAU_6.x, PILE_POSITIONS.TABLEAU_6.y, PILE_TYPE.TABLEAU, cardDeck.cards, 6),
+    PileClass:new(PILE_POSITIONS.TABLEAU_7.x, PILE_POSITIONS.TABLEAU_7.y, PILE_TYPE.TABLEAU, cardDeck.cards, 7)
+  }
+
 end
 
 function love.update()
   selectedCard = nil
   
-  for _, card in ipairs(cardTable) do
-    card:update()
-    if card:checkForMouseOver() then
-      selectedCard = card
+  for _, pile in ipairs(cardPiles) do
+    for _, card in ipairs(pile.cards) do
+      card:update()
+      if card:checkForMouseOver() then
+        selectedCard = card
+      end
     end
   end
   
@@ -104,8 +113,10 @@ function love.update()
 end
 
 function love.draw()
-  for _, card in ipairs(cardTable) do
-    card:draw()
+  for _, pile in ipairs(cardPiles) do
+    for _, card in ipairs(pile.cards) do
+      card:draw()
+    end
   end
   -- Love2D doesn't have support for z-ordering, but we can do this instead!
   if #grabbedCards ~= 0 then 
@@ -113,12 +124,16 @@ function love.draw()
       card:draw() 
     end
   end
+
+  -- tableau:draw()
 end
 
 function love.keypressed(key)
   if key == "f" then
-    for _, card in ipairs(cardTable) do
-      card:flip()
+    for _, pile in ipairs(cardPiles) do
+      for _, card in ipairs(pile.cards) do
+        card:flip()
+      end
     end
   end
 end
