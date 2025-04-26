@@ -143,8 +143,13 @@ function releaseCard()
 
   for i, card in ipairs(grabbedCards) do
     card.state = CARD_STATE.MOUSE_OVER
+    print(dropZone)
     if dropZone ~= "FALSE" and cardPiles[dropZone]:push(card) then
       cardPiles[card.location]:pop(#grabbedCards)
+      if #(cardPiles[card.location].cards) > 0 then 
+        cardPiles[card.location].cards[#(cardPiles[card.location].cards)]:flip()
+      end
+      
       card.location = dropZone
     else 
       card.position = grabPos[i]

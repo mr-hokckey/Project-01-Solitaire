@@ -9,7 +9,8 @@ CardClass = {}
 CARD_STATE = {
   IDLE = 0,
   MOUSE_OVER = 1,
-  GRABBED = 2
+  GRABBED = 2,
+  UNPLAYABLE = 3
 }
 
 CARD_WIDTH = 32
@@ -60,7 +61,7 @@ function CardClass:draw()
   else
     love.graphics.draw(cardBackSprite, self.position.x, self.position.y, 0, self.size.x / CARD_WIDTH, self.size.y / CARD_HEIGHT)
   end
-  love.graphics.print(self:getValue(), self.position.x + self.size.x, self.position.y)
+  love.graphics.print(math.fmod(self:getValue(), 13), self.position.x + self.size.x, self.position.y)
 end
 
 function CardClass:checkForMouseOver()

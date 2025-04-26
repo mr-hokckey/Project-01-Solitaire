@@ -1,8 +1,8 @@
 require "card"
 
 PILE_TYPE = {
-  TABLEAU = 0,
-  FOUNDATION = 1,
+  FOUNDATION = 0,
+  TABLEAU = 1,
   WASTE = 2
 }
 
@@ -88,16 +88,17 @@ function PileClass:checkForMouseOver()
   local isMouseOver = 
     love.mouse.getX() > self.position.x and
     love.mouse.getX() < self.position.x + 64 and
-    love.mouse.getY() > self.position.y and
-    love.mouse.getY() < self.position.y + 96
-
-  if #self.cards > 0 then
+    love.mouse.getY() > self.position.y + (#self.cards-1) * 24 * self.type and
+    love.mouse.getY() < self.position.y + (#self.cards-1) * 24 * self.type + 96
+    
+  if self.type == PILE_TYPE.FOUNDATION then
     isMouseOver = 
-      love.mouse.getX() > self.cards[#self.cards].position.x and
-      love.mouse.getX() < self.cards[#self.cards].position.x + self.cards[#self.cards].size.x and
-      love.mouse.getY() > self.cards[#self.cards].position.y and
-      love.mouse.getY() < self.cards[#self.cards].position.y + self.cards[#self.cards].size.y
+      love.mouse.getX() > self.position.x and
+      love.mouse.getX() < self.position.x + 64 and
+      love.mouse.getY() > self.position.y and
+      love.mouse.getY() < self.position.y + 96
   end
+  
 
   -- because you can't drag something to the wastepile
   if isMouseOver and self.type ~= PILE_TYPE.WASTE then 
