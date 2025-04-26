@@ -1,6 +1,9 @@
 
 require "vector"
 
+cardSuits = {"c", "d", "s", "h"}
+cardRanks = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"}
+
 CardClass = {}
 
 CARD_STATE = {
@@ -14,7 +17,7 @@ CARD_HEIGHT = 48
 
 cardBackSprite = love.graphics.newImage("Sprites/card_back.png")
 
-function CardClass:new(xPos, yPos, name, isFaceUp)
+function CardClass:new(xPos, yPos, name, isFaceUp, location)
   local card = {}
   local metadata = {__index = CardClass}
   setmetatable(card, metadata)
@@ -23,6 +26,8 @@ function CardClass:new(xPos, yPos, name, isFaceUp)
   card.size = Vector(64, 96)
   card.state = CARD_STATE.IDLE
   card.isFaceUp = isFaceUp
+  card.location = location
+  card.name = name
   
   card.sprite = love.graphics.newImage("Sprites/" .. name .. ".png")
   
@@ -55,6 +60,7 @@ function CardClass:draw()
   else
     love.graphics.draw(cardBackSprite, self.position.x, self.position.y, 0, self.size.x / CARD_WIDTH, self.size.y / CARD_HEIGHT)
   end
+  -- love.graphics.print(self:getValue(), self.position.x + self.size.x, self.position.y)
 end
 
 function CardClass:checkForMouseOver()
@@ -69,4 +75,24 @@ end
 
 function CardClass:flip()
   self.isFaceUp = not self.isFaceUp
+end
+
+function CardClass:getValue()
+  local val = 0
+  local suit = string.sub(self.name, 2, 2)
+  local rank = string.sub(self.name, 1, 1)
+
+  for i, s in ipairs(cardSuits) do
+    if suit == s then
+      val = 13 * (i - 1)
+    end
+  end
+
+  for i, r in ipairs(cardRanks) do
+    if rank == r then
+      val = val + (i - 1)
+    end
+  end
+
+  return val
 end

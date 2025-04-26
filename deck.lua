@@ -1,14 +1,16 @@
+-- A deck of cards class, which will also double as the stock pile.
+
+require "card"
 
 DeckClass = {}
 
-cardSuits = {"c", "d", "h", "s"}
-cardRanks = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"}
-
-function DeckClass:new()
+function DeckClass:new(xPos, yPos)
   local deck = {}
   local metadata = {__index = DeckClass}
   setmetatable(deck, metadata)
 
+  deck.position = Vector(xPos, yPos)
+  deck.size = Vector(64, 96)
   deck.cards = {}
   
   for _, s in ipairs(cardSuits) do
@@ -31,4 +33,8 @@ function DeckClass:shuffleDeck()
   for i = 1, cardCount do
     print(self.cards[i])
   end
+end
+
+function DeckClass:draw()
+  love.graphics.draw(cardBackSprite, self.position.x, self.position.y, 0, self.size.x / CARD_WIDTH, self.size.y / CARD_HEIGHT)
 end
