@@ -58,7 +58,7 @@ function love.load()
     ["FOUNDATION_2"] = PileClass:new(PILE_POSITIONS.FOUNDATION_2.x, PILE_POSITIONS.FOUNDATION_2.y, PILE_TYPE.FOUNDATION, cardDeck.cards, 0, "FOUNDATION_2"),
     ["FOUNDATION_3"] = PileClass:new(PILE_POSITIONS.FOUNDATION_3.x, PILE_POSITIONS.FOUNDATION_3.y, PILE_TYPE.FOUNDATION, cardDeck.cards, 0, "FOUNDATION_3"),
     ["FOUNDATION_4"] = PileClass:new(PILE_POSITIONS.FOUNDATION_4.x, PILE_POSITIONS.FOUNDATION_4.y, PILE_TYPE.FOUNDATION, cardDeck.cards, 0, "FOUNDATION_4"),
-    ["WASTE"] = PileClass:new(PILE_POSITIONS.WASTE.x, PILE_POSITIONS.WASTE.y, PILE_TYPE.WASTE, cardDeck.cards, 3, "WASTE"),
+    ["WASTE"] = PileClass:new(PILE_POSITIONS.WASTE.x, PILE_POSITIONS.WASTE.y, PILE_TYPE.WASTE, cardDeck.cards, 0, "WASTE"),
   }
 
 end
@@ -100,6 +100,7 @@ function love.draw()
   cardDeck:draw()
   
   for _, pile in pairs(cardPiles) do
+    pile:draw()
     for _, card in ipairs(pile.cards) do
       card:draw()
     end
@@ -142,8 +143,9 @@ function releaseCard()
 
   for i, card in ipairs(grabbedCards) do
     card.state = CARD_STATE.MOUSE_OVER
-    if cardPiles[dropZone]:push(card) then
+    if dropZone ~= "FALSE" and cardPiles[dropZone]:push(card) then
       cardPiles[card.location]:pop(#grabbedCards)
+      card.location = dropZone
     else 
       card.position = grabPos[i]
     end

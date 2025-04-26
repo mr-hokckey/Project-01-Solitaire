@@ -36,5 +36,6 @@ function DeckClass:shuffleDeck()
 end
 
 function DeckClass:draw()
+  love.graphics.setColor(1, 1, 1, 1)
   love.graphics.draw(cardBackSprite, self.position.x, self.position.y, 0, self.size.x / CARD_WIDTH, self.size.y / CARD_HEIGHT)
 end

@@ -38,16 +38,34 @@ function PileClass:update()
 end
 
 function PileClass:draw()
-  for _, card in ipairs(self.cards) do
-    card:draw()
-  end
+  love.graphics.setColor(0, 0.5, 0, 1)
+  love.graphics.rectangle("fill", self.position.x, self.position.y, 64, 96)
+  love.graphics.print(self:checkForMouseOver(), self.position.x, self.position.y - 20)
 end
 
 function PileClass:push(card)
   if self.type == PILE_TYPE.TABLEAU then
-    if math.fmod(self.cards[#self.cards]:getValue(), 13) == math.fmod(card:getValue(), 13) + 1 then
+    if #self.cards == 0 then
+      if math.fmod(card:getValue(), 13) == 12 then
+        table.insert(self.cards, card)
+        card.position = Vector(self.position.x, self.position.y + (#self.cards-1) * 24)
+        return true
+      end
+    elseif card:canStackTableau(self.cards[#self.cards]) then
       table.insert(self.cards, card)
       card.position = Vector(self.position.x, self.position.y + (#self.cards-1) * 24)
+      return true
+    end
+  elseif self.type == PILE_TYPE.FOUNDATION then
+    if #self.cards == 0 then
+      if math.fmod(card:getValue(), 13) == 0 then
+        table.insert(self.cards, card)
+        card.position = Vector(self.position.x, self.position.y)
+        return true
+      end
+    elseif card:canStackFoundation(self.cards[#self.cards]) then
+      table.insert(self.cards, card)
+      card.position = Vector(self.position.x, self.position.y)
       return true
     end
   end
@@ -57,17 +75,21 @@ end
 
 -- removes the top card in the pile
 function PileClass:pop(numCards)
+  local ret = {}
   for i = 1, numCards do
-    if #self.cards > 0 then table.remove(self.cards, #self.cards) end
+    if #self.cards > 0 then
+      table.insert(ret, table.remove(self.cards))
+    end
   end
+  return ret
 end
 
 function PileClass:checkForMouseOver()
   local isMouseOver = 
     love.mouse.getX() > self.position.x and
-    love.mouse.getX() < self.position.x + CARD_WIDTH*2 and
+    love.mouse.getX() < self.position.x + 64 and
     love.mouse.getY() > self.position.y and
-    love.mouse.getY() < self.position.y + CARD_HEIGHT*2
+    love.mouse.getY() < self.position.y + 96
 
   if #self.cards > 0 then
     isMouseOver = 
@@ -77,7 +99,8 @@ function PileClass:checkForMouseOver()
       love.mouse.getY() < self.cards[#self.cards].position.y + self.cards[#self.cards].size.y
   end
 
-  if isMouseOver then 
+  -- because you can't drag something to the wastepile
+  if isMouseOver and self.type ~= PILE_TYPE.WASTE then 
     return self.name
   else
     return "FALSE"

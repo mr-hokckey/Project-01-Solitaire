@@ -60,7 +60,7 @@ function CardClass:draw()
   else
     love.graphics.draw(cardBackSprite, self.position.x, self.position.y, 0, self.size.x / CARD_WIDTH, self.size.y / CARD_HEIGHT)
   end
-  -- love.graphics.print(self:getValue(), self.position.x + self.size.x, self.position.y)
+  love.graphics.print(self:getValue(), self.position.x + self.size.x, self.position.y)
 end
 
 function CardClass:checkForMouseOver()
@@ -70,7 +70,7 @@ function CardClass:checkForMouseOver()
     love.mouse.getY() > self.position.y and
     love.mouse.getY() < self.position.y + self.size.y
     
-  return isMouseOver
+  return isMouseOver and self.isFaceUp
 end
 
 function CardClass:flip()
@@ -95,4 +95,17 @@ function CardClass:getValue()
   end
 
   return val
+end
+
+-- return T/F if a card can or cannot be added to a tableau.
+function CardClass:canStackTableau(card)
+  return 
+    math.fmod(self:getValue(), 13) + 1 == math.fmod(card:getValue(), 13) and
+    math.fmod(math.floor(self:getValue() / 13), 2) ~= math.fmod(math.floor(card:getValue() / 13), 2)
+end
+
+function CardClass:canStackFoundation(card)
+  return
+    self:getValue() == card:getValue() + 1 and
+    math.fmod(self:getValue(), 13) == math.fmod(card:getValue(), 13) + 1
 end
