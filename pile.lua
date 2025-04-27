@@ -1,3 +1,7 @@
+-- Pile class for creating piles of cards as objects - tableaus, foundations, and the wastepile.
+-- They behave differently depending on the type, and store card objects in a table, but we're
+-- mainly interested in their functionality as data structures.
+
 require "card"
 
 PILE_TYPE = {
@@ -32,8 +36,8 @@ function PileClass:new(xPos, yPos, type, deck, n, name)
 end
 
 -- function to be called periodically to make sure a pile looks the way it should.
--- This involves things like flipping the top card of a tableau and marking certain cards
--- as unplayable according to the rules of the game.
+-- This involves things like positioning cards to fan out, flipping the top card of a tableau,
+-- and marking certain cards as unplayable according to the rules of the game.
 function PileClass:update()
   if self.type == PILE_TYPE.TABLEAU then
     for i, card in ipairs(self.cards) do
@@ -42,6 +46,7 @@ function PileClass:update()
     if #self.cards ~= 0 and not self.cards[#self.cards].isFaceUp then
       self.cards[#self.cards]:flip()
     end
+    
   elseif self.type == PILE_TYPE.FOUNDATION then
     for _, card in ipairs(self.cards) do
       card.position = Vector(self.position.x, self.position.y)
@@ -49,6 +54,7 @@ function PileClass:update()
       card.isFaceUp = true
     end
     if #self.cards ~= 0 then self.cards[#self.cards].state = CARD_STATE.IDLE end
+
   elseif self.type == PILE_TYPE.WASTE then
     for i, card in ipairs(self.cards) do
       card.position = Vector(self.position.x, self.position.y + (i-1)*24)
@@ -64,31 +70,15 @@ function PileClass:update()
   end
 end
 
-
--- function PileClass:displayCards(cardTable)
---   if self.type == PILE_TYPE.TABLEAU then
---     for i, card in ipairs(self.cards) do
---       cardTable[card].position = Vector(self.position.x, self.position.y + (i-1)*24)
---     end
---   elseif self.type == PILE_TYPE.FOUNDATION then
---     for i, card in ipairs(self.cards) do
---       cardTable[card].position = Vector(self.position.x, self.position.y)
---     end
---   elseif self.type == PILE_TYPE.WASTE then
---     for i = #self.cards-2, #self.cards do
---       cardTable[self.cards[i]].position = Vector(self.position.x, self.position.y + (i-(#self.cards-2)*24))
---     end
---   end
--- end
-
+-- just draw a little rectangle where the pile is supposed to be
 function PileClass:draw()
   love.graphics.setColor(0, 0.5, 0, 1)
   love.graphics.rectangle("fill", self.position.x, self.position.y, 64, 96)
-  -- love.graphics.print(self:checkForMouseOver(), self.position.x, self.position.y - 20)
 end
 
--- attempt to move a card to another pile. Insert the card at the end of the table,
--- move the card to the proper position, and return T/F if successful.
+-- attempt to move a table of cards to another pile, adhering to the rules of the game. 
+-- Insert the card at the end of the table,
+-- move the card to the proper position, and return true. or return false if unsuccessful.
 function PileClass:push(cards)
   if self.type == PILE_TYPE.TABLEAU then
     if #self.cards == 0 then
@@ -97,7 +87,6 @@ function PileClass:push(cards)
           table.insert(self.cards, card)
           card.location = self.name
         end
-        
         return true
       end
     elseif cards[1]:canStackTableau(self.cards[#self.cards]) then
@@ -105,19 +94,18 @@ function PileClass:push(cards)
         table.insert(self.cards, card)
         card.location = self.name
       end
-      
       return true
     end
   elseif self.type == PILE_TYPE.FOUNDATION then
     if #self.cards == 0 then
       if math.fmod(cards[1]:getValue(), 13) == 0 then
         table.insert(self.cards, cards[1])
-        
+        cards[1].location = self.name
         return true
       end
     elseif #cards == 1 and cards[1]:canStackFoundation(self.cards[#self.cards]) then
       table.insert(self.cards, cards[1])
-
+      cards[1].location = self.name
       return true
     end
   -- if we're pushing to the wastepile, we're assuming we're getting these from the deck.
@@ -125,13 +113,14 @@ function PileClass:push(cards)
     for _, card in ipairs(cards) do
       table.insert(self.cards, card)
       card.location = self.name
+      return true
     end
   end
 
   return false
 end
 
--- removes the top card in the pile
+-- removes the top N cards in the pile
 function PileClass:pop(numCards)
   local ret = {}
   for i = 1, numCards do
@@ -142,6 +131,7 @@ function PileClass:pop(numCards)
   return ret
 end
 
+-- return T/F if the mouse is in the drop zone for the pile. 
 function PileClass:checkForMouseOver()
   local isMouseOver = 
     love.mouse.getX() > self.position.x and

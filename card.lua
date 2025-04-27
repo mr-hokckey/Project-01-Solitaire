@@ -1,3 +1,6 @@
+-- Card class for making card objects.
+-- Cards use the sprites found on itch.io, and they have different states with different behaviors.
+-- They also store the name of the pile they're currently inside, which makes lots of code easier to work with.
 
 require "vector"
 
@@ -6,6 +9,7 @@ cardRanks = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"}
 
 CardClass = {}
 
+-- UNPLAYABLE is for cards that are face-up, but not playable. Any card that's face down is not playable.
 CARD_STATE = {
   IDLE = 0,
   MOUSE_OVER = 1,
@@ -35,17 +39,9 @@ function CardClass:new(xPos, yPos, name, isFaceUp, location)
   return card
 end
 
+-- called on every card every frame. Basically just sets the card state to IDLE or UNPLAYABLE.
+-- changing states to MOUSE_OVER or GRABBED will happen after this method is called.
 function CardClass:update()
-  -- DEBUG --
-  -- if love.keyboard.isDown("o") then
-  --   self.state = CARD_STATE.MOUSE_OVER
-  -- elseif love.keyboard.isDown("g") then
-  --   self.state = CARD_STATE.GRABBED
-  -- else
-  --   self.state = CARD_STATE.IDLE
-  -- end
-  -- DEBUG --
-
   -- if a card is unplayable, it should remain so until modified externally.
   if self.state == CARD_STATE.UNPLAYABLE then 
     self.state = CARD_STATE.UNPLAYABLE
@@ -54,6 +50,7 @@ function CardClass:update()
   end
 end
 
+-- cards are drawn at twice the size of their sprites.
 function CardClass:draw()
   -- NEW: drop shadow for non-idle cards
   if self.state ~= CARD_STATE.IDLE and self.state ~= CARD_STATE.UNPLAYABLE then
@@ -68,8 +65,6 @@ function CardClass:draw()
   else
     love.graphics.draw(cardBackSprite, self.position.x, self.position.y, 0, self.size.x / CARD_WIDTH, self.size.y / CARD_HEIGHT)
   end
-  -- love.graphics.print(math.fmod(self:getValue(), 13), self.position.x + self.size.x, self.position.y)
-  -- love.graphics.print(self.state, self.position.x + self.size.x, self.position.y)
 end
 
 -- return true if a card is currently being selected. That is, the mouse is hovering over it,
@@ -88,10 +83,13 @@ function CardClass:checkForMouseOver()
   return isMouseOver and self.isFaceUp
 end
 
+-- flip the card over :)
 function CardClass:flip()
   self.isFaceUp = not self.isFaceUp
 end
 
+-- as it turns out, putting the cards in order and numbering them from 0-51 makes it easy to
+-- use math to figure out whether or not a card should be allowed into a pile.
 function CardClass:getValue()
   local val = 0
   local suit = string.sub(self.name, 2, 2)
@@ -119,6 +117,7 @@ function CardClass:canStackTableau(card)
     math.fmod(math.floor(self:getValue() / 13), 2) ~= math.fmod(math.floor(card:getValue() / 13), 2)
 end
 
+-- return T/F if a card can or cannot be added to a foundation.
 function CardClass:canStackFoundation(card)
   return
     self:getValue() == card:getValue() + 1 and

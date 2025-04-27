@@ -2,8 +2,9 @@
 -- CMPM-121 - Project 1 - Solitaire
 -- 4/18/2025
 
--- Card Sprites: https://unbent.itch.io/yewbi-playing-card-set-1
--- Since all the cards were in one png, I ended up writing a Python program to split them into individual files.
+-- main class - this class handles drag-and-drop functionality and interactions between different classes.
+-- I decided not to make a grabber class because I thought it was causing bugs when I was working on it
+-- during discussion section. I might have been wrong though.
 
 io.stdout:setvbuf("no")
 
@@ -43,6 +44,7 @@ function love.load()
   
   math.randomseed(os.time())
   
+  -- create a card deck object and shuffle it with a random seed.
   cardDeck = DeckClass:new(PILE_POSITIONS.STOCK.x, PILE_POSITIONS.STOCK.y)
   cardDeck:shuffleDeck()
 
@@ -63,6 +65,8 @@ function love.load()
 
 end
 
+-- love.update() - call update() and checkForMouseOver() on each of the cards, but only one card
+-- can actually be highlighted. Also handle grabbing and releasing cards.
 function love.update()
   selectedCard = nil
   
@@ -96,6 +100,8 @@ function love.update()
 
 end
 
+-- Draw each of the cards and piles. Drawing them in order makes sure they fan out smoothly like they would in real life.
+-- However, drawing the grabbedCards AGAIN makes them appear on top of everything else!
 function love.draw()
   cardDeck:draw()
   
@@ -113,16 +119,10 @@ function love.draw()
   end
 end
 
-function love.keypressed(key)
-  -- if key == "f" then
-  --   for _, pile in pairs(cardPiles) do
-  --     for _, card in ipairs(pile.cards) do
-  --       card:flip()
-  --     end
-  --   end
-  -- end
-
-  if key == 'd' then
+-- click on the deck to draw 3 cards from the deck. Those strings are removed from the deck and used in new card objects.
+-- The math also accounts for when there are less than 3 cards left in the deck.
+function love.mousepressed(xPos, yPos, button)
+  if button == 1 and cardDeck:checkForMouseOver() then
     if #cardDeck.cards == 0 then
       for _, card in ipairs(cardPiles["WASTE"].cards) do
         table.insert(cardDeck.cards, card.name)
@@ -140,6 +140,8 @@ function love.keypressed(key)
   end
 end
 
+-- Grab the selected card if it exists. Then, find out if that card is in a tableau, and
+-- grab all the cards below it if so.
 function grabCards()
   if selectedCard ~= nil then
     selectedCard.state = CARD_STATE.GRABBED
@@ -147,7 +149,6 @@ function grabCards()
     table.insert(grabPos, selectedCard.position)
     table.insert(grabOffset, Vector(love.mouse.getX() - selectedCard.position.x, love.mouse.getY() - selectedCard.position.y))
 
-    -- 
     local srcPile = selectedCard.location
     if cardPiles[srcPile].type == PILE_TYPE.TABLEAU then
       local cardIndex = 1
@@ -167,6 +168,7 @@ function grabCards()
   end
 end
 
+-- upon releasing cards, check if we're hovering over a pile, and check if they can be added. Add them if so.
 function releaseCards()
   local src = grabbedCards[1].location
   local dst = "FALSE"

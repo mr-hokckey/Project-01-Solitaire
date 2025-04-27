@@ -1,3 +1,4 @@
+-- Vector class from in-class coding.
 
 Vector = {}
 
