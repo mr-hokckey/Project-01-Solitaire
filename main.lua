@@ -147,6 +147,23 @@ function grabCards()
     table.insert(grabPos, selectedCard.position)
     table.insert(grabOffset, Vector(love.mouse.getX() - selectedCard.position.x, love.mouse.getY() - selectedCard.position.y))
 
+    -- 
+    local srcPile = selectedCard.location
+    if cardPiles[srcPile].type == PILE_TYPE.TABLEAU then
+      local cardIndex = 1
+      for i, card in ipairs(cardPiles[srcPile].cards) do
+        if card.name == selectedCard.name then
+          cardIndex = i
+          break
+        end
+      end
+
+      for i = cardIndex + 1, #cardPiles[srcPile].cards do
+        table.insert(grabbedCards, cardPiles[srcPile].cards[i])
+        table.insert(grabPos, cardPiles[srcPile].cards[i].position)
+        table.insert(grabOffset, Vector(love.mouse.getX() - cardPiles[srcPile].cards[i].position.x, love.mouse.getY() - cardPiles[srcPile].cards[i].position.y))
+      end
+    end
   end
 end
 
@@ -162,10 +179,6 @@ function releaseCards()
 
   if dst ~= "FALSE" and cardPiles[dst]:push(grabbedCards) then
     cardPiles[src]:pop(#grabbedCards)
-  -- else 
-  --   for i, card in ipairs(grabbedCards) do
-  --     card.position = grabPos[i]
-  --   end
     cardPiles[dst]:update()
   end
   cardPiles[src]:update()

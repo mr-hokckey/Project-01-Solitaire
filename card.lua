@@ -69,7 +69,7 @@ function CardClass:draw()
     love.graphics.draw(cardBackSprite, self.position.x, self.position.y, 0, self.size.x / CARD_WIDTH, self.size.y / CARD_HEIGHT)
   end
   -- love.graphics.print(math.fmod(self:getValue(), 13), self.position.x + self.size.x, self.position.y)
-  love.graphics.print(self.state, self.position.x + self.size.x, self.position.y)
+  -- love.graphics.print(self.state, self.position.x + self.size.x, self.position.y)
 end
 
 -- return true if a card is currently being selected. That is, the mouse is hovering over it,

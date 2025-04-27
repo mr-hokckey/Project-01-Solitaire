@@ -51,11 +51,11 @@ function PileClass:update()
     if #self.cards ~= 0 then self.cards[#self.cards].state = CARD_STATE.IDLE end
   elseif self.type == PILE_TYPE.WASTE then
     for i, card in ipairs(self.cards) do
-      card.position = Vector(self.position.x, self.position.y + i*24)
+      card.position = Vector(self.position.x, self.position.y + (i-1)*24)
       card.state = CARD_STATE.UNPLAYABLE
       card.isFaceUp = true
     end
-    for i = 1, #self.cards-2 do
+    for i = 2, #self.cards-2 do
       for j = i, #self.cards do
         self.cards[j].position.y = self.cards[j].position.y - 24
       end
@@ -84,7 +84,7 @@ end
 function PileClass:draw()
   love.graphics.setColor(0, 0.5, 0, 1)
   love.graphics.rectangle("fill", self.position.x, self.position.y, 64, 96)
-  love.graphics.print(self:checkForMouseOver(), self.position.x, self.position.y - 20)
+  -- love.graphics.print(self:checkForMouseOver(), self.position.x, self.position.y - 20)
 end
 
 -- attempt to move a card to another pile. Insert the card at the end of the table,
