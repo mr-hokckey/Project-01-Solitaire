@@ -37,19 +37,26 @@ end
 
 function CardClass:update()
   -- DEBUG --
-  if love.keyboard.isDown("o") then
-    self.state = CARD_STATE.MOUSE_OVER
-  elseif love.keyboard.isDown("g") then
-    self.state = CARD_STATE.GRABBED
-  else
+  -- if love.keyboard.isDown("o") then
+  --   self.state = CARD_STATE.MOUSE_OVER
+  -- elseif love.keyboard.isDown("g") then
+  --   self.state = CARD_STATE.GRABBED
+  -- else
+  --   self.state = CARD_STATE.IDLE
+  -- end
+  -- DEBUG --
+
+  -- if a card is unplayable, it should remain so until modified externally.
+  if self.state == CARD_STATE.UNPLAYABLE then 
+    self.state = CARD_STATE.UNPLAYABLE
+  else 
     self.state = CARD_STATE.IDLE
   end
-  -- DEBUG --
 end
 
 function CardClass:draw()
   -- NEW: drop shadow for non-idle cards
-  if self.state ~= CARD_STATE.IDLE then
+  if self.state ~= CARD_STATE.IDLE and self.state ~= CARD_STATE.UNPLAYABLE then
     love.graphics.setColor(0, 0, 0, 0.8) -- color values [0, 1]
     local offset = 4 * (self.state == CARD_STATE.GRABBED and 2 or 1)
     love.graphics.draw(self.sprite, self.position.x + offset, self.position.y + offset, 0, self.size.x / CARD_WIDTH, self.size.y / CARD_HEIGHT)
@@ -61,10 +68,17 @@ function CardClass:draw()
   else
     love.graphics.draw(cardBackSprite, self.position.x, self.position.y, 0, self.size.x / CARD_WIDTH, self.size.y / CARD_HEIGHT)
   end
-  love.graphics.print(math.fmod(self:getValue(), 13), self.position.x + self.size.x, self.position.y)
+  -- love.graphics.print(math.fmod(self:getValue(), 13), self.position.x + self.size.x, self.position.y)
+  love.graphics.print(self.state, self.position.x + self.size.x, self.position.y)
 end
 
+-- return true if a card is currently being selected. That is, the mouse is hovering over it,
+-- and the card is face-up and playable.
 function CardClass:checkForMouseOver()
+  if self.state == CARD_STATE.UNPLAYABLE then 
+    return false
+  end
+  
   local isMouseOver = 
     love.mouse.getX() > self.position.x and
     love.mouse.getX() < self.position.x + self.size.x and

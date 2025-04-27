@@ -84,7 +84,7 @@ function love.update()
   end
   
   if not love.mouse.isDown(1) and #grabbedCards ~= 0 then
-    releaseCard()
+    releaseCards()
   end
   
   if #grabbedCards ~= 0 then
@@ -108,18 +108,35 @@ function love.draw()
   -- Love2D doesn't have support for z-ordering, but we can do this instead!
   if #grabbedCards ~= 0 then 
     for _, card in ipairs(grabbedCards) do
-      card:draw() 
+      card:draw()
     end
   end
 end
 
 function love.keypressed(key)
-  if key == "f" then
-    for _, pile in pairs(cardPiles) do
-      for _, card in ipairs(pile.cards) do
-        card:flip()
+  -- if key == "f" then
+  --   for _, pile in pairs(cardPiles) do
+  --     for _, card in ipairs(pile.cards) do
+  --       card:flip()
+  --     end
+  --   end
+  -- end
+
+  if key == 'd' then
+    if #cardDeck.cards == 0 then
+      for _, card in ipairs(cardPiles["WASTE"].cards) do
+        table.insert(cardDeck.cards, card.name)
+      end
+      cardPiles["WASTE"].cards = {}
+    else
+      for _ = 1, 3 do
+        if #cardDeck.cards ~= 0 then
+          cardPiles["WASTE"]:push({CardClass:new(0, 0, cardDeck.cards[1], true, "WASTE")})
+          table.remove(cardDeck.cards, 1)
+        end
       end
     end
+    cardPiles["WASTE"]:update()
   end
 end
 
@@ -129,32 +146,29 @@ function grabCards()
     table.insert(grabbedCards, selectedCard)
     table.insert(grabPos, selectedCard.position)
     table.insert(grabOffset, Vector(love.mouse.getX() - selectedCard.position.x, love.mouse.getY() - selectedCard.position.y))
+
   end
 end
 
-function releaseCard()
-  local dropZone = "FALSE"
+function releaseCards()
+  local src = grabbedCards[1].location
+  local dst = "FALSE"
   for _, pile in pairs(cardPiles) do
-    dropZone = pile:checkForMouseOver()
-    if dropZone ~= "FALSE" then
+    dst = pile:checkForMouseOver()
+    if dst ~= "FALSE" then
       break
     end
   end
 
-  for i, card in ipairs(grabbedCards) do
-    card.state = CARD_STATE.MOUSE_OVER
-    print(dropZone)
-    if dropZone ~= "FALSE" and cardPiles[dropZone]:push(card) then
-      cardPiles[card.location]:pop(#grabbedCards)
-      if #(cardPiles[card.location].cards) > 0 then 
-        cardPiles[card.location].cards[#(cardPiles[card.location].cards)]:flip()
-      end
-      
-      card.location = dropZone
-    else 
-      card.position = grabPos[i]
-    end
+  if dst ~= "FALSE" and cardPiles[dst]:push(grabbedCards) then
+    cardPiles[src]:pop(#grabbedCards)
+  -- else 
+  --   for i, card in ipairs(grabbedCards) do
+  --     card.position = grabPos[i]
+  --   end
+    cardPiles[dst]:update()
   end
+  cardPiles[src]:update()
   grabbedCards = {}
   grabPos = {}
   grabOffset = {}
