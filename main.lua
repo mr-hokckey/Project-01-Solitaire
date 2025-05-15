@@ -14,6 +14,7 @@ require "vector"
 require "card"
 require "deck"
 require "pile"
+require "button"
 
 selectedCard = nil
 grabbedCards = {}
@@ -25,6 +26,9 @@ function love.load()
   screenHeight = 640
   love.window.setMode(screenWidth, screenHeight)
   love.graphics.setBackgroundColor(0, 0.68, 0.26, 1)
+
+  you_win = love.graphics.newImage("Sprites/you_win.png")
+  -- reset_button = love.graphics.newImage("Sprites/reset_button.png")
   
   PILE_POSITIONS = {
     STOCK = Vector(screenWidth * 1/8 - 48, screenHeight * 1/5 - 48),
@@ -49,6 +53,7 @@ function love.load()
   math.randomseed(os.time())
   setup()
 
+  resetButton = ButtonClass:new(screenWidth * 1/8 - 48, screenHeight * 4/5 - 48, love.graphics.newImage("Sprites/reset_button.png"))
 end
 
 function setup()
@@ -69,7 +74,6 @@ function setup()
   end
 
   cardPiles["WASTE"] = PileClass:new(PILE_POSITIONS.WASTE.x, PILE_POSITIONS.WASTE.y, PILE_TYPE.WASTE, cardDeck.cards, 0, "WASTE")
-
 end
 
 -- love.update() - call update() and checkForMouseOver() on each of the cards, but only one card
@@ -111,6 +115,7 @@ end
 -- However, drawing the grabbedCards AGAIN makes them appear on top of everything else!
 function love.draw()
   cardDeck:draw()
+  resetButton:draw()
   
   for _, pile in pairs(cardPiles) do
     pile:draw()
@@ -124,6 +129,20 @@ function love.draw()
       card:draw()
     end
   end
+
+  if checkForGameOver() then
+    love.graphics.setColor(1,1,1,1)
+    love.graphics.draw(you_win, screenWidth / 2 - 48*4, screenHeight / 4 - 32*2, 0, 4, 4)
+  end
+end
+
+function checkForGameOver()
+  for i = 1, 4 do
+    if #cardPiles["FOUNDATION_" .. i].cards ~= 13 then
+      return false
+    end
+  end
+  return true
 end
 
 
@@ -148,6 +167,8 @@ function love.mousepressed(xPos, yPos, button)
       end
     end
     cardPiles["WASTE"]:update()
+  elseif button == 1 and resetButton:checkForMouseOver() then
+    setup()
   end
 end
 
