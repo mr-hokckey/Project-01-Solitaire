@@ -5,6 +5,7 @@
 require "card"
 
 DeckClass = {}
+local instance = nil -- instance variable should now make this a proper singleton
 
 function DeckClass:new(xPos, yPos)
   local deck = {}
@@ -20,7 +21,8 @@ function DeckClass:new(xPos, yPos)
       table.insert(deck.cards, r .. s)
     end
   end
-  return deck
+  instance = deck
+  return instance
 end
 
 -- Shuffle the deck using Fisher-Yates.
